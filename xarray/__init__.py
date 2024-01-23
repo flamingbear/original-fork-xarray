@@ -83,6 +83,7 @@ __all__ = (
     "ones_like",
     "open_dataarray",
     "open_dataset",
+    "open_datatree",
     "open_mfdataset",
     "open_zarr",
     "polyval",
