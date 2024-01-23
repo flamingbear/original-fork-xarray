@@ -16,31 +16,33 @@ What's New
 
 .. _whats-new.2024.01.1:
 
-v2024.01.1 (unreleased)
------------------------
+v2024.01.1 (23 Jan, 2024)
+-------------------------
 
-New Features
-~~~~~~~~~~~~
-
+This release is to fix a bug with the rendering of the documentation, but it also includes changes to the handling of pandas frequency strings.
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
 
+- Following pandas, :py:meth:`infer_freq` will return ``"YE"``, instead of ``"Y"`` (formerly ``"A"``).
+  This is to be consistent with the deprecation of the latter frequency string in pandas 2.2.
+  This is a follow up to :pull:`8415` (:issue:`8612`, :pull:`8642`).
+  By `Mathias Hauser <https://github.com/mathause>`_.
 
 Deprecations
 ~~~~~~~~~~~~
 
-
-Bug fixes
-~~~~~~~~~
-
+- Following pandas, the frequency string ``"Y"`` (formerly ``"A"``) is deprecated in
+  favor of ``"YE"``. These strings are used, for example, in :py:func:`date_range`,
+  :py:func:`cftime_range`, :py:meth:`DataArray.resample`, and :py:meth:`Dataset.resample`
+  among others (:issue:`8612`, :pull:`8629`).
+  By `Mathias Hauser <https://github.com/mathause>`_.
 
 Documentation
 ~~~~~~~~~~~~~
 
-
-Internal Changes
-~~~~~~~~~~~~~~~~
+- Pin ``sphinx-book-theme`` to ``1.0.1`` to fix a rendering issue with the sidebar in the docs. (:issue:`8619`, :pull:`8632`)
+  By `Tom Nicholas <https://github.com/TomNicholas>`_.
 
 .. _whats-new.2024.01.0:
 
@@ -7261,10 +7263,16 @@ Breaking changes
 - The ``season`` datetime shortcut now returns an array of string labels
   such `'DJF'`:
 
-  .. ipython:: python
+  .. code-block:: ipython
 
-      ds = xray.Dataset({"t": pd.date_range("2000-01-01", periods=12, freq="M")})
-      ds["t.season"]
+      In[92]: ds = xray.Dataset({"t": pd.date_range("2000-01-01", periods=12, freq="M")})
+
+      In[93]: ds["t.season"]
+      Out[93]:
+      <xarray.DataArray 'season' (t: 12)>
+      array(['DJF', 'DJF', 'MAM', ..., 'SON', 'SON', 'DJF'], dtype='<U3')
+      Coordinates:
+        * t        (t) datetime64[ns] 2000-01-31 2000-02-29 ... 2000-11-30 2000-12-31
 
   Previously, it returned numbered seasons 1 through 4.
 - We have updated our use of the terms of "coordinates" and "variables". What
