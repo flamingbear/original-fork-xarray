@@ -34,32 +34,6 @@ def _get_nc_dataset_class(engine):
     return Dataset
 
 
-def open_datatree(filename_or_obj, engine=None, **kwargs) -> DataTree:
-    """
-    Open and decode a dataset from a file or file-like object, creating one Tree node for each group in the file.
-
-    Parameters
-    ----------
-    filename_or_obj : str, Path, file-like, or DataStore
-        Strings and Path objects are interpreted as a path to a netCDF file or Zarr store.
-    engine : str, optional
-        Xarray backend engine to us. Valid options include `{"netcdf4", "h5netcdf", "zarr"}`.
-    kwargs :
-        Additional keyword arguments passed to ``xarray.open_dataset`` for each group.
-
-    Returns
-    -------
-    DataTree
-    """
-
-    if engine == "zarr":
-        return _open_datatree_zarr(filename_or_obj, **kwargs)
-    elif engine in [None, "netcdf4", "h5netcdf"]:
-        return _open_datatree_netcdf(filename_or_obj, engine=engine, **kwargs)
-    else:
-        raise ValueError("Unsupported engine")
-
-
 def _open_datatree_netcdf(filename: str, **kwargs) -> DataTree:
     ncDataset = _get_nc_dataset_class(kwargs.get("engine", None))
 
