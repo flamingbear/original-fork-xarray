@@ -1036,30 +1036,28 @@ class ZarrBackendEntrypoint(BackendEntrypoint):
         return ds
 
     def open_datatree(self,store, **kwargs) -> DataTree:
-        return _open_datatree_zarr(store, **kwargs)
 
-def _open_datatree_zarr(store, **kwargs) -> DataTree:
-    import zarr  # type: ignore
+        import zarr  # type: ignore
 
-    zds = zarr.open_group(store, mode="r")
-    ds = open_dataset(store, engine="zarr", **kwargs)
-    tree_root = DataTree.from_dict({"/": ds})
-    for path in _iter_zarr_groups(zds):
-        try:
-            subgroup_ds = open_dataset(store, engine="zarr", group=path, **kwargs)
-        except zarr.errors.PathNotFoundError:
-            subgroup_ds = Dataset()
+        zds = zarr.open_group(store, mode="r")
+        ds = open_dataset(store, engine="zarr", **kwargs)
+        tree_root = DataTree.from_dict({"/": ds})
+        for path in _iter_zarr_groups(zds):
+            try:
+                subgroup_ds = open_dataset(store, engine="zarr", group=path, **kwargs)
+            except zarr.errors.PathNotFoundError:
+                subgroup_ds = Dataset()
 
-        # TODO refactor to use __setitem__ once creation of new nodes by assigning Dataset works again
-        node_name = NodePath(path).name
-        new_node: DataTree = DataTree(name=node_name, data=subgroup_ds)
-        tree_root._set_item(
-            path,
-            new_node,
-            allow_overwrite=False,
-            new_nodes_along_path=True,
-        )
-    return tree_root
+            # TODO refactor to use __setitem__ once creation of new nodes by assigning Dataset works again
+            node_name = NodePath(path).name
+            new_node: DataTree = DataTree(name=node_name, data=subgroup_ds)
+            tree_root._set_item(
+                path,
+                new_node,
+                allow_overwrite=False,
+                new_nodes_along_path=True,
+            )
+        return tree_root
 
 
 BACKEND_ENTRYPOINTS["zarr"] = ("zarr", ZarrBackendEntrypoint)
