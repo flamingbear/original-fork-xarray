@@ -6,6 +6,8 @@ import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
+from datatree import DataTree, NodePath
+
 from xarray.backends.common import (
     BACKEND_ENTRYPOINTS,
     BackendEntrypoint,
@@ -422,6 +424,40 @@ class H5netcdfBackendEntrypoint(BackendEntrypoint):
             decode_timedelta=decode_timedelta,
         )
         return ds
+
+    # TODO [MHS, 01/23/2024] This is duplicative of the netcdf4 code in an ugly way.
+    def open_datatree(self,
+                      filename: str,
+                      **kwargs) -> DataTree:
+
+        from h5netcdf.legacyapi import Dataset as ncDataset
+
+        from xarray.backends.api import open_dataset
+
+        ds = open_dataset(filename, **kwargs)
+        tree_root = DataTree.from_dict({"/": ds})
+        with ncDataset(filename, mode="r") as ncds:
+            for path in _iter_nc_groups(ncds):
+                subgroup_ds = open_dataset(filename, group=path, **kwargs)
+
+                # TODO refactor to use __setitem__ once creation of new nodes by assigning Dataset works again
+                node_name = NodePath(path).name
+                new_node: DataTree = DataTree(name=node_name, data=subgroup_ds)
+                tree_root._set_item(
+                    path,
+                    new_node,
+                    allow_overwrite=False,
+                    new_nodes_along_path=True,
+                )
+        return tree_root
+
+# TODO [MHS, 01/23/2024] directly duplicated from netCDF4 backend
+def _iter_nc_groups(root, parent="/"):
+    parent = NodePath(parent)
+    for path, group in root.groups.items():
+        gpath = parent / path
+        yield str(gpath)
+        yield from _iter_nc_groups(group, parent=gpath)
 
 
 BACKEND_ENTRYPOINTS["h5netcdf"] = ("h5netcdf", H5netcdfBackendEntrypoint)

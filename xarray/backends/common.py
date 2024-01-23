@@ -9,6 +9,7 @@ from glob import glob
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
+from datatree import DataTree
 
 from xarray.conventions import cf_encoder
 from xarray.core import indexing
@@ -458,6 +459,12 @@ class BackendEntrypoint:
     - ``guess_can_open`` method: it shall return ``True`` if the backend is able to open
       ``filename_or_obj``, ``False`` otherwise. The implementation of this
       method is not mandatory.
+    - ``open_datatree`` method: it shall implement reading from file, variables
+      decoding and it returns an instance of :py:class:`~datatree.DataTree`.
+      It shall take in input at least ``filename_or_obj`` argument. The
+      implementation of this method is not mandatory.  For more details see
+      :ref:`RST open_datatree`.
+
 
     Attributes
     ----------
@@ -471,6 +478,7 @@ class BackendEntrypoint:
     url : str, default: ""
         A string with the URL to the backend's documentation.
         The setting of this attribute is not mandatory.
+
     """
 
     open_dataset_parameters: ClassVar[tuple | None] = None
@@ -507,6 +515,18 @@ class BackendEntrypoint:
         """
 
         return False
+
+    def open_datatree(
+        self,
+        filename_or_obj: str | os.PathLike[Any] | BufferedIOBase | AbstractDataStore,
+        **kwargs: Any,
+    ) -> DataTree:
+        """
+        Backend open_datatree method used by Xarray in :py:func:`~xarray.open_datatree`.
+        """
+
+        raise NotImplementedError
+
 
 
 # mapping of engine name to (module name, BackendEntrypoint Class)

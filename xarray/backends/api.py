@@ -809,13 +809,12 @@ def open_datatree(
     -------
     datatree.DataTree
     """
+    if engine is None:
+        engine = plugins.guess_engine(filename_or_obj)
 
-    if engine == "zarr":
-        return _open_datatree_zarr(filename_or_obj, **kwargs)
-    elif engine in [None, "netcdf4", "h5netcdf"]:
-        return _open_datatree_netcdf(filename_or_obj, engine=engine, **kwargs)
-    else:
-        raise ValueError("Unsupported engine")
+    backend = plugins.get_backend(engine)
+
+    return backend.open_datatree(filename_or_obj, **kwargs)
 
 
 def open_mfdataset(

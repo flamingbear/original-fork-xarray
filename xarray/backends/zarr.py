@@ -7,6 +7,8 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from datatree import DataTree
+from datatree.datatree import NodePath
 
 from xarray import coding, conventions
 from xarray.backends.common import (
@@ -1035,9 +1037,13 @@ class ZarrBackendEntrypoint(BackendEntrypoint):
             )
         return ds
 
-    def open_datatree(self,store, **kwargs) -> DataTree:
-
+    def open_datatree(
+            self,
+            store,
+            **kwargs) -> DataTree:
         import zarr  # type: ignore
+
+        from xarray.backends.api import open_dataset
 
         zds = zarr.open_group(store, mode="r")
         ds = open_dataset(store, engine="zarr", **kwargs)
@@ -1059,5 +1065,11 @@ class ZarrBackendEntrypoint(BackendEntrypoint):
             )
         return tree_root
 
+def _iter_zarr_groups(root, parent="/"):
+    parent = NodePath(parent)
+    for path, group in root.groups():
+        gpath = parent / path
+        yield str(gpath)
+        yield from _iter_zarr_groups(group, parent=gpath)
 
 BACKEND_ENTRYPOINTS["zarr"] = ("zarr", ZarrBackendEntrypoint)

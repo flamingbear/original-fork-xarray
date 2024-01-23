@@ -3,22 +3,6 @@ from xarray import Dataset, open_dataset
 from .datatree import DataTree, NodePath
 
 
-def _iter_zarr_groups(root, parent="/"):
-    parent = NodePath(parent)
-    for path, group in root.groups():
-        gpath = parent / path
-        yield str(gpath)
-        yield from _iter_zarr_groups(group, parent=gpath)
-
-
-def _iter_nc_groups(root, parent="/"):
-    parent = NodePath(parent)
-    for path, group in root.groups.items():
-        gpath = parent / path
-        yield str(gpath)
-        yield from _iter_nc_groups(group, parent=gpath)
-
-
 def _get_nc_dataset_class(engine):
     if engine == "netcdf4":
         from netCDF4 import Dataset  # type: ignore
@@ -32,27 +16,6 @@ def _get_nc_dataset_class(engine):
     else:
         raise ValueError(f"unsupported engine: {engine}")
     return Dataset
-
-
-def _open_datatree_netcdf(filename: str, **kwargs) -> DataTree:
-    ncDataset = _get_nc_dataset_class(kwargs.get("engine", None))
-
-    ds = open_dataset(filename, **kwargs)
-    tree_root = DataTree.from_dict({"/": ds})
-    with ncDataset(filename, mode="r") as ncds:
-        for path in _iter_nc_groups(ncds):
-            subgroup_ds = open_dataset(filename, group=path, **kwargs)
-
-            # TODO refactor to use __setitem__ once creation of new nodes by assigning Dataset works again
-            node_name = NodePath(path).name
-            new_node: DataTree = DataTree(name=node_name, data=subgroup_ds)
-            tree_root._set_item(
-                path,
-                new_node,
-                allow_overwrite=False,
-                new_nodes_along_path=True,
-            )
-    return tree_root
 
 
 def _create_empty_netcdf_group(filename, group, mode, engine):
