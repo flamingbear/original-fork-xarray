@@ -789,7 +789,10 @@ def open_dataarray(
     return data_array
 
 
-def open_datatree(filename_or_obj, engine=None, **kwargs) -> DataTree:
+def open_datatree(
+        filename_or_obj: str | os.PathLike[Any] | BufferedIOBase | AbstractDataStore,
+        engine: T_Engine = None,
+        **kwargs) -> DataTree:
     """
     Open and decode a dataset from a file or file-like object, creating one Tree node for each group in the file.
 
@@ -800,11 +803,11 @@ def open_datatree(filename_or_obj, engine=None, **kwargs) -> DataTree:
     engine : str, optional
         Xarray backend engine to us. Valid options include `{"netcdf4", "h5netcdf", "zarr"}`.
     kwargs :
-        Additional keyword arguments passed to ``xarray.open_dataset`` for each group.
+        Additional keyword arguments passed to :py:meth:`~xarray.open_dataset` for each group.
 
     Returns
     -------
-    DataTree
+    datatree.DataTree
     """
 
     if engine == "zarr":
@@ -813,6 +816,7 @@ def open_datatree(filename_or_obj, engine=None, **kwargs) -> DataTree:
         return _open_datatree_netcdf(filename_or_obj, engine=engine, **kwargs)
     else:
         raise ValueError("Unsupported engine")
+
 
 def open_mfdataset(
     paths: str | NestedSequence[str | os.PathLike],
