@@ -8,7 +8,6 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from datatree import DataTree, NodePath
 
 from xarray import coding
 from xarray.backends.common import (
@@ -42,6 +41,8 @@ from xarray.core.variable import Variable
 
 if TYPE_CHECKING:
     from io import BufferedIOBase
+
+    from datatree_.datatree import DataTree
 
     from xarray.backends.common import AbstractDataStore
     from xarray.core.dataset import Dataset
@@ -668,9 +669,8 @@ class NetCDF4BackendEntrypoint(BackendEntrypoint):
             )
         return ds
 
-    def open_datatree(self,
-                      filename: str,
-                      **kwargs) -> DataTree:
+    def open_datatree(self, filename: str, **kwargs) -> DataTree:
+        from datatree_.datatree import DataTree, NodePath
         from netCDF4 import Dataset as ncDataset
 
         from xarray.backends.api import open_dataset
@@ -694,12 +694,13 @@ class NetCDF4BackendEntrypoint(BackendEntrypoint):
 
 
 def _iter_nc_groups(root, parent="/"):
+    from datatree_.datatree import NodePath
+
     parent = NodePath(parent)
     for path, group in root.groups.items():
         gpath = parent / path
         yield str(gpath)
         yield from _iter_nc_groups(group, parent=gpath)
-
 
 
 BACKEND_ENTRYPOINTS["netcdf4"] = ("netCDF4", NetCDF4BackendEntrypoint)

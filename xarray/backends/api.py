@@ -17,7 +17,6 @@ from typing import (
 )
 
 import numpy as np
-from datatree import DataTree
 
 from xarray import backends, conventions
 from xarray.backends import plugins
@@ -70,6 +69,8 @@ if TYPE_CHECKING:
     T_NetcdfTypes = Literal[
         "NETCDF4", "NETCDF4_CLASSIC", "NETCDF3_64BIT", "NETCDF3_CLASSIC"
     ]
+    from datatree_.datatree import DataTree
+
 
 DATAARRAY_NAME = "__xarray_dataarray_name__"
 DATAARRAY_VARIABLE = "__xarray_dataarray_variable__"
@@ -790,9 +791,10 @@ def open_dataarray(
 
 
 def open_datatree(
-        filename_or_obj: str | os.PathLike[Any] | BufferedIOBase | AbstractDataStore,
-        engine: T_Engine = None,
-        **kwargs) -> DataTree:
+    filename_or_obj: str | os.PathLike[Any] | BufferedIOBase | AbstractDataStore,
+    engine: T_Engine = None,
+    **kwargs,
+) -> DataTree:
     """
     Open and decode a dataset from a file or file-like object, creating one Tree node for each group in the file.
 

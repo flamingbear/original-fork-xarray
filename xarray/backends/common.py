@@ -9,7 +9,6 @@ from glob import glob
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
-from datatree import DataTree
 
 from xarray.conventions import cf_encoder
 from xarray.core import indexing
@@ -22,6 +21,7 @@ if TYPE_CHECKING:
 
     from xarray.core.dataset import Dataset
     from xarray.core.types import NestedSequence
+    from xarray.datatree_.datatree import DataTree
 
 # Create a logger object, but don't add any handlers. Leave that to user code.
 logger = logging.getLogger(__name__)
@@ -526,7 +526,6 @@ class BackendEntrypoint:
         """
 
         raise NotImplementedError
-
 
 
 # mapping of engine name to (module name, BackendEntrypoint Class)

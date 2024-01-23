@@ -1,6 +1,4 @@
-from xarray import Dataset, open_dataset
-
-from .datatree import DataTree, NodePath
+from xarray.datatree_.datatree.datatree import DataTree
 
 
 def _get_nc_dataset_class(engine):
